@@ -1,5 +1,10 @@
 #pragma once
+#include <iostream>
+#include <vector>
 #include "LineBody.h"
+#include <Eigen/Core>
+
+using namespace std;
 
 namespace physics
 {
@@ -10,12 +15,27 @@ namespace physics
         C  // 相補拘束
     };
 
+    // Jacobian of constraint
+    struct CJacobian
+    {
+        int iid;
+        int jid;
+        float vix;
+        float viy;
+        float wi;
+        float vjx;
+        float vjy;
+        float wj;
+    };
+
     class Constraint
     {
     protected:
     public:
         Constraint() {}
-        virtual Matrix3f getJacobian() {}
+        virtual vector<CJacobian> getJacobian() {}
+        virtual int wsize() {}
+        virtual void fix(float, float) {} // applay penalty force
     };
 
     // 回転を制限されない拘束
@@ -27,7 +47,32 @@ namespace physics
 
         HingeJoint(LineBody *ibody, LineBody *jbody, float r) : ibody(ibody), jbody(jbody), r(r){};
 
-        Matrix3f getJacobian() override{};
+        vector<CJacobian> getJacobian() override
+        {
+            vector<CJacobian> ans(2);
+            Vector2f ri = ibody->ri(r) - ibody->c;
+            Vector2f rj = jbody->s - jbody->c;
+            int iid = ibody->_getId();
+            int jid = jbody->_getId();
+            struct CJacobian j1 = {iid, jid, 1, 0, -ri(1), -1, 0, rj(1)};
+            struct CJacobian j2 = {iid, jid, 0, 1, ri(0), 0, -1, -rj(0)};
+            ans[0] = j1;
+            ans[1] = j2;
+            return ans;
+        };
+
+        int wsize() override
+        {
+            return 2;
+        };
+
+        void fix(float alpha, float beta) override
+        {
+            Vector2f rji = jbody->s - ibody->ri(r);
+            Vector2f move = rji * alpha;
+            ibody->slide(move);
+            jbody->slide(-move);
+        }
     };
 
     class Collision : Constraint
@@ -41,5 +86,6 @@ namespace physics
             : ibody(ibody), jbody(jbody){};
 
         void check();
+        vector<CJacobian> getJacobian() override{};
     };
 }

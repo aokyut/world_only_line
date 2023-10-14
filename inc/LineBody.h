@@ -30,15 +30,19 @@ namespace physics
 
     private:
         Bar bar;
-        // 加速度
-        Vector2f a;
-        // 角加速度
-        float aw;
         // 固定する
         bool fix;
 
+        int id;
+
     public:
         const float m;
+        // 加速度
+        Vector2f a;
+        Vector2f f_ex;
+        // 角加速度
+        float aw;
+        float fw;
         // 両端の座標
         Vector2f s, t;
         // 中心の座標
@@ -49,20 +53,31 @@ namespace physics
         // 重心の速度
         Vector2f v;
         // デルタ
-        const float delta;
+        // const float delta;
         /// @param sx 始点のx座標
         /// @param sy 始点のy座標
         /// @param tx 終点のx座標
         /// @param ty 終点のy座標
         /// @param m 線分の重さ
-        LineBody(float sx, float sy, float tx, float ty, float m, float delta)
-            : m(m), s(Vector2f(sx, sy)), t(Vector2f(tx, ty)), I(((tx - sx) * (tx - sx) + (ty - sy) * (ty - sy)) * m / 12.0f), delta(delta), bar(Bar()), w(0), aw(0), fix(false)
+        LineBody(float sx, float sy, float tx, float ty, float m)
+            : m(m), s(Vector2f(sx, sy)), t(Vector2f(tx, ty)), I(((tx - sx) * (tx - sx) + (ty - sy) * (ty - sy)) * m / 12.0f), bar(Bar()), w(0), aw(0), fix(false)
         {
             // std::cout << "LineBody in" << sx << sy << tx << ty << m << delta << std::endl;
             // std::cout << "LineBody s and t " << s(0) << " " << s(1) << " " << t(0) << " " << t(1) << std::endl;
             c = 0.5f * (s + t);
-            a << 0, 0;
+            f_ex << 0, 0;
+            fw = 0;
             v << 0, 0;
+        }
+
+        void _setId(int newId)
+        {
+            id = newId;
+        }
+
+        int _getId()
+        {
+            return id;
         }
 
         /// @return 1ならば終点、0ならば始点となる直線上の座標
@@ -85,14 +100,17 @@ namespace physics
             }
             cx.normalize();
             Vector2f centerForce = cx.dot(f) * cx;
-            a += centerForce / m;
-            aw += torque / I;
+            // a += centerForce / m;
+            f_ex += centerForce;
+            // aw += torque / I;
+            fw += torque;
         }
 
         /// @param f 与えられる力
         void addForce(Vector2f f)
         {
-            a += f / m;
+            // a += f / m;
+            f_ex += f;
             // std::cout << "力2 " << this << ": "
             //           << "\n"
             //           << a << std::endl;
@@ -109,25 +127,49 @@ namespace physics
             c += dx;
         }
 
-        void update()
+        void setVelocity(float vx, float vy, float vw)
+        {
+            v << vx, vy;
+            w = vw;
+        }
+
+        void slide(Vector2f dpos)
+        {
+            if (fix)
+            {
+                return;
+            }
+            s += dpos;
+            t += dpos;
+            c += dpos;
+        }
+
+        float potential()
+        {
+            return c(1) * m * 0.05 + m * v.squaredNorm() / 2 + I * w * w / 2;
+        }
+
+        void update(float delta)
         {
             // std::cout << "fix:" << fix << std::endl;
             if (fix)
             {
                 v << 0, 0;
-                a << 0, 0;
+                f_ex << 0, 0;
                 w = 0;
-                aw = 0;
+                fw = 0;
                 return;
             }
-            v += delta * a;
-            w += delta * aw;
+            // v += delta * a;
+            // w += delta * aw;
             // std::cout << "加速度: \n"
             //           << a << "\n"
             //           << aw << std::endl;
             // 加速度をリセット
-            a << 0, 0;
-            aw = 0;
+            // a << 0, 0;
+            // aw = 0;
+            f_ex << 0, 0;
+            fw = 0;
 
             // std::cout << "速度: \n"
             //           << v << "\n"

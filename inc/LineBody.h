@@ -144,10 +144,10 @@ namespace physics
             c += dpos;
         }
 
-        float potential()
-        {
-            return c(1) * m * 0.05 + m * v.squaredNorm() / 2 + I * w * w / 2;
-        }
+        // float potential()
+        // {
+        //     return c(1) * m * 0.05 + m * v.squaredNorm() / 2 + I * w * w / 2;
+        // }
 
         void update(float delta)
         {

@@ -222,13 +222,13 @@ int main(void)
     float delta = 0.01f;
     int idling = 10;
     physics::World world = physics::World();
-    physics::LineBody line1 = physics::LineBody(0, 1, 0, 0.5, 1000);
+    physics::LineBody line1 = physics::LineBody(0, 1, 0, 0.5, 1);
     physics::LineBody line2 = physics::LineBody(0, 0.5, 0.5, 0.5, 1);
     physics::LineBody line3 = physics::LineBody(0.5, 0.5, 1, 0.5, 1);
     physics::LineBody line4 = physics::LineBody(1, 0.5, 1.5, 0.5, 1);
     physics::LineBody line5 = physics::LineBody(1.5, 0.5, 2.0, 0.5, 1);
     physics::LineBody line6 = physics::LineBody(2.0, 0.5, 2.5, 0.5, 1);
-    line1.setFix();
+    // line1.setFix();
     physics::HingeJoint c1 = physics::HingeJoint(&line1, &line2, 1.0f);
     physics::HingeJoint c2 = physics::HingeJoint(&line2, &line3, 1.0f);
     physics::HingeJoint c3 = physics::HingeJoint(&line3, &line4, 1.0f);
@@ -278,10 +278,10 @@ int main(void)
         // bar->draw(s, t);
         for (int i = 0; i < idling; i++)
         {
-            line2.addForce(f / idling);
-            line3.addForce(f / idling);
-            line4.addForce(f / idling);
-            line5.addForce(f / idling);
+            // line2.addForce(f / idling);
+            // line3.addForce(f / idling);
+            // line4.addForce(f / idling);
+            // line5.addForce(f / idling);
             line6.addForce(f / idling);
             world.step();
         }

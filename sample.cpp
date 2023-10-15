@@ -222,29 +222,56 @@ int main(void)
     float delta = 0.01f;
     int idling = 10;
     physics::World world = physics::World();
-    physics::LineBody line1 = physics::LineBody(0, 1, 0, 0.5, 1);
-    physics::LineBody line2 = physics::LineBody(0, 0.5, 0.5, 0.5, 1);
-    physics::LineBody line3 = physics::LineBody(0.5, 0.5, 1, 0.5, 1);
-    physics::LineBody line4 = physics::LineBody(1, 0.5, 1.5, 0.5, 1);
-    physics::LineBody line5 = physics::LineBody(1.5, 0.5, 2.0, 0.5, 1);
-    physics::LineBody line6 = physics::LineBody(2.0, 0.5, 2.5, 0.5, 1);
-    // line1.setFix();
+
+    // box
+    physics::LineBody line1 = physics::LineBody(0, 1, 0, 0, 1);
+    physics::LineBody line2 = physics::LineBody(0, 0, 1, 0, 1);
+    physics::LineBody line3 = physics::LineBody(1, 0, 1, 1, 1);
+    physics::LineBody line4 = physics::LineBody(1, 1, 0, 1, 1);
+    physics::LineBody line5 = physics::LineBody(0, 0, 1, 1, 1);
     physics::HingeJoint c1 = physics::HingeJoint(&line1, &line2, 1.0f);
     physics::HingeJoint c2 = physics::HingeJoint(&line2, &line3, 1.0f);
     physics::HingeJoint c3 = physics::HingeJoint(&line3, &line4, 1.0f);
-    physics::HingeJoint c4 = physics::HingeJoint(&line4, &line5, 1.0f);
-    physics::HingeJoint c5 = physics::HingeJoint(&line5, &line6, 1.0f);
+    physics::HingeJoint c4 = physics::HingeJoint(&line4, &line1, 1.0f);
+    physics::HingeJoint c5 = physics::HingeJoint(&line1, &line5, 1.0f);
+    physics::HingeJoint c6 = physics::HingeJoint(&line5, &line4, 1.0f);
+
     world.addBody(&line1);
     world.addBody(&line2);
     world.addBody(&line3);
     world.addBody(&line4);
     world.addBody(&line5);
-    world.addBody(&line6);
     world.addJoint(&c1);
     world.addJoint(&c2);
     world.addJoint(&c3);
     world.addJoint(&c4);
     world.addJoint(&c5);
+    world.addJoint(&c6);
+
+    // snake
+    // physics::LineBody line1 = physics::LineBody(0, 1, 0, 0.5, 1);
+    // physics::LineBody line2 = physics::LineBody(0, 0.5, 0.5, 0.5, 1);
+    // physics::LineBody line3 = physics::LineBody(0.5, 0.5, 1, 0.5, 1);
+    // physics::LineBody line4 = physics::LineBody(1, 0.5, 1.5, 0.5, 1);
+    // physics::LineBody line5 = physics::LineBody(1.5, 0.5, 2.0, 0.5, 1);
+    // physics::LineBody line6 = physics::LineBody(2.0, 0.5, 5, 0.5, 1);
+    // // line1.setFix();
+    // physics::HingeJoint c1 = physics::HingeJoint(&line1, &line2, 1.0f);
+    // physics::HingeJoint c2 = physics::HingeJoint(&line2, &line3, 1.0f);
+    // physics::HingeJoint c3 = physics::HingeJoint(&line3, &line4, 1.0f);
+    // physics::HingeJoint c4 = physics::HingeJoint(&line4, &line5, 1.0f);
+    // physics::HingeJoint c5 = physics::HingeJoint(&line5, &line6, 1.0f);
+    // world.addBody(&line1);
+    // world.addBody(&line2);
+    // world.addBody(&line3);
+    // world.addBody(&line4);
+    // world.addBody(&line5);
+    // world.addBody(&line6);
+    // world.addJoint(&c1);
+    // world.addJoint(&c2);
+    // world.addJoint(&c3);
+    // world.addJoint(&c4);
+    // world.addJoint(&c5);
 
     Vector2f x, f;
     x << 0, -0.25;
@@ -278,11 +305,12 @@ int main(void)
         // bar->draw(s, t);
         for (int i = 0; i < idling; i++)
         {
-            // line2.addForce(f / idling);
-            // line3.addForce(f / idling);
-            // line4.addForce(f / idling);
-            // line5.addForce(f / idling);
-            line6.addForce(f / idling);
+            line1.addForce(f / idling);
+            line2.addForce(f / idling);
+            line3.addForce(f / idling);
+            line4.addForce(f / idling);
+            line5.addForce(f / idling);
+            // line6.addForce(f / idling);
             world.step();
         }
         world.render();

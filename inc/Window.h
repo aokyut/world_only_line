@@ -95,7 +95,7 @@ public:
         // ウィンドウを閉じる必要がなければ true を返す
         return !glfwWindowShouldClose(window);
     }
-    void setCamera(float x, float y)
+    void setCameraPos(float x, float y)
     {
         location[0] = -x;
         location[1] = -y;

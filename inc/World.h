@@ -39,6 +39,7 @@ namespace physics
         float fric_mu = 1;
         float th_gauss_seidel = 0.00001;
         float loops_gauss_seidel = 100;
+        float omega_sor = 1.2;
         float floor_y = -2.0;
         Bar floor;
 
@@ -65,6 +66,25 @@ namespace physics
             constraints.push_back(constraint);
             wsize += constraint->wsize();
         }
+
+        vector<float> center()
+        {
+            Vector2f weight_center = Vector2f::Zero();
+            for (LineBody *body : bodies)
+            {
+                weight_center += body->c;
+            }
+
+            weight_center /= bodies.size();
+
+            vector<float> ans(2);
+
+            ans[0] = weight_center(0);
+            ans[1] = weight_center(1);
+
+            return ans;
+        }
+
         void step()
         {
             // int cmax = constraints.size();
@@ -80,8 +100,8 @@ namespace physics
                     Vector2f r = body->s - body->c;
                     struct FloorCollisionJacobian j1 = {body->_getId(), 0, 1, r(0)};
                     struct FloorCollisionJacobian j2 = {body->_getId(), 1, 0, -r(1)};
-                    collision_jacobians.push_back(j2);
                     collision_jacobians.push_back(j1);
+                    collision_jacobians.push_back(j2);
                 }
                 if (body->t(1) <= floor_y)
                 {
@@ -89,13 +109,13 @@ namespace physics
                     Vector2f r = body->t - body->c;
                     struct FloorCollisionJacobian j1 = {body->_getId(), 0, 1, r(0)};
                     struct FloorCollisionJacobian j2 = {body->_getId(), 1, 0, -r(1)};
-                    collision_jacobians.push_back(j2);
                     collision_jacobians.push_back(j1);
+                    collision_jacobians.push_back(j2);
                 }
             }
 
             int collision_dim = collision_jacobians.size();
-            cout << "collision dim: " << collision_dim << endl;
+            // cout << "collision dim: " << collision_dim << endl;
 
             // 拘束を処理する
             // [w_size, body * 3]
@@ -176,7 +196,6 @@ namespace physics
 
             // 拘束力を求める
             Sf A = jacobian * m_inv_mat * jacobian.transpose() * delta;
-            MatrixXf A_ = A.toDense();
             VectorXf b = jacobian * (u + m_inv_mat * f_ex * delta);
             // -b = Aλ
 
@@ -299,12 +318,12 @@ namespace physics
                 // process collisions
                 for (; j < dim; j += 2)
                 {
-                    // const float lambda_j = max(0.0f, (A.row(j).dot(lambda) + b(j)));
-                    const float lambda_j = max(-fric_mu * lambda(j + 1), min(fric_mu * lambda(j + 1), (A.row(j).dot(lambda) + b(j))));
+                    const float lambda_j = max(0.0f, (A.row(j).dot(lambda) + b(j)));
+                    // const float lambda_j = max(-fric_mu * lambda(j + 1), min(fric_mu * lambda(j + 1), (A.row(j).dot(lambda) + b(j))));
                     // d_lambda += abs(lambda_j - lambda(j));
                     lambda(j) = lambda_j;
-                    // const float lambda_j1 = max(-fric_mu * lambda(j), min(fric_mu * lambda(j), (A.row(j + 1).dot(lambda) + b(j + 1))));
-                    const float lambda_j1 = max(0.0f, (A.row(j + 1).dot(lambda) + b(j + 1)));
+                    const float lambda_j1 = max(-fric_mu * lambda(j), min(fric_mu * lambda(j), (A.row(j + 1).dot(lambda) + b(j + 1))));
+                    // const float lambda_j1 = max(0.0f, (A.row(j + 1).dot(lambda) + b(j + 1)));
                     d_lambda += abs(lambda_j1 - lambda(j + 1)) + abs(lambda_j - lambda(j));
                     lambda(j + 1) = lambda_j1;
                 }

@@ -20,9 +20,9 @@ namespace physics
     struct FloorCollisionJacobian
     {
         int id;
-        int vix;
-        int viy;
-        int wi;
+        float vix;
+        float viy;
+        float wi;
     };
 
     class World
@@ -80,8 +80,8 @@ namespace physics
                     Vector2f r = body->s - body->c;
                     struct FloorCollisionJacobian j1 = {body->_getId(), 0, 1, r(0)};
                     struct FloorCollisionJacobian j2 = {body->_getId(), 1, 0, -r(1)};
-                    collision_jacobians.push_back(j1);
                     collision_jacobians.push_back(j2);
+                    collision_jacobians.push_back(j1);
                 }
                 if (body->t(1) <= floor_y)
                 {
@@ -89,8 +89,8 @@ namespace physics
                     Vector2f r = body->t - body->c;
                     struct FloorCollisionJacobian j1 = {body->_getId(), 0, 1, r(0)};
                     struct FloorCollisionJacobian j2 = {body->_getId(), 1, 0, -r(1)};
-                    collision_jacobians.push_back(j1);
                     collision_jacobians.push_back(j2);
+                    collision_jacobians.push_back(j1);
                 }
             }
 
@@ -197,19 +197,23 @@ namespace physics
             //      << A << endl;
             // cout << "Here is the vector b:\n"
             //      << b << endl;
-            // cout << "Here is the vector lambda:\n"
-            //      << lambda << endl;
+            // cout << "Here is the vector constraint force:\n"
+            //      << jacobian.transpose() * lambda << endl;
+            // cout << "Here is the j_t:\n"
+            //      << jacobian.transpose() << endl;
 
             // cout << "M_inv * J_t:\n"
             //      << m_inv_mat * jacobian.transpose() << endl;
             // cout << " u + m-1 * f * delta:\n"
-            //      << u + m_inv_mat * f_ex * delta << endl;
+            //      << jacobian * (u + m_inv_mat * f_ex * delta) << endl;
 
-            // cout << "Here is the vector constraint force:\n"
-            //      << jacobian.transpose() * lambda << endl;
+            // cout << "Here is the vector lambda:\n"
+            //      << lambda << endl;
 
             // cout << "The force is:\n"
             //      << f_ex << endl;
+            // cout << "The w is:\n"
+            //      << jacobian * next_u << endl;
             // float energy = 0;
             for (int i = 0; i < body_count; i++)
             {
@@ -295,11 +299,14 @@ namespace physics
                 // process collisions
                 for (; j < dim; j += 2)
                 {
-                    const float lambda_j = max(0.0f, (A.row(j).dot(lambda) + b(j)));
+                    // const float lambda_j = max(0.0f, (A.row(j).dot(lambda) + b(j)));
+                    const float lambda_j = max(-fric_mu * lambda(j + 1), min(fric_mu * lambda(j + 1), (A.row(j).dot(lambda) + b(j))));
                     // d_lambda += abs(lambda_j - lambda(j));
                     lambda(j) = lambda_j;
-                    const float lambda_j1 = max(-fric_mu * lambda(j), min(fric_mu * lambda(j), (A.row(j + 1).dot(lambda) + b(j + 1))));
+                    // const float lambda_j1 = max(-fric_mu * lambda(j), min(fric_mu * lambda(j), (A.row(j + 1).dot(lambda) + b(j + 1))));
+                    const float lambda_j1 = max(0.0f, (A.row(j + 1).dot(lambda) + b(j + 1)));
                     d_lambda += abs(lambda_j1 - lambda(j + 1)) + abs(lambda_j - lambda(j));
+                    lambda(j + 1) = lambda_j1;
                 }
                 if (d_lambda / dim < th_gauss_seidel)
                 {

@@ -1,11 +1,11 @@
 # (1)コンパイラ
 CC  = g++
 # (2)コンパイルオプション
-CFLAGS    =
+CFLAGS    = -std=c++17 -g
 # (3)実行ファイル名
-TARGET  = sample
+TARGET  = sample_env
 # (4)コンパイル対象のソースコード
-SRCS    = sample.cpp
+SRCS    = sample_env.cpp
 # (5)オブジェクトファイル名
 OBJS    = $(SRCS:.cpp=.o)
  

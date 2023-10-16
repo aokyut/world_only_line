@@ -10,6 +10,8 @@
 #include "Bar.h"
 #include "World.h"
 
+// using namespace std;
+
 // プログラムオブジェクトのリンク結果を表示する
 // program: プログラムオブジェクト名
 GLboolean printProgramInfoLog(GLuint program)
@@ -199,7 +201,7 @@ int main(void)
     // glViewport(100, 50, 300, 300);
 
     // 背景色の指定
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 0.1f);
 
     // シェーダプログラムの作成
     const GLuint program(loadProgram("point.vert", "point.frag"));
@@ -224,17 +226,17 @@ int main(void)
     physics::World world = physics::World();
 
     // box
-    physics::LineBody line1 = physics::LineBody(0, 1, 0, 0, 1);
-    physics::LineBody line2 = physics::LineBody(0, 0, 1, 0, 1);
-    physics::LineBody line3 = physics::LineBody(1, 0, 1, 1, 1);
-    physics::LineBody line4 = physics::LineBody(1, 1, 0, 1, 1);
+    physics::LineBody line1 = physics::LineBody(0, 0, 0, 1, 1);
+    physics::LineBody line2 = physics::LineBody(0, 1, 1, 1, 1);
+    physics::LineBody line3 = physics::LineBody(1, 1, 1, 0, 1);
+    physics::LineBody line4 = physics::LineBody(1, 0, 0, 0, 1);
     physics::LineBody line5 = physics::LineBody(0, 0, 1, 1, 1);
     physics::HingeJoint c1 = physics::HingeJoint(&line1, &line2, 1.0f);
     physics::HingeJoint c2 = physics::HingeJoint(&line2, &line3, 1.0f);
     physics::HingeJoint c3 = physics::HingeJoint(&line3, &line4, 1.0f);
     physics::HingeJoint c4 = physics::HingeJoint(&line4, &line1, 1.0f);
-    physics::HingeJoint c5 = physics::HingeJoint(&line1, &line5, 1.0f);
-    physics::HingeJoint c6 = physics::HingeJoint(&line5, &line4, 1.0f);
+    physics::HingeJoint c5 = physics::HingeJoint(&line4, &line5, 1.0f);
+    physics::HingeJoint c6 = physics::HingeJoint(&line5, &line3, 1.0f);
 
     world.addBody(&line1);
     world.addBody(&line2);
@@ -275,7 +277,7 @@ int main(void)
 
     Vector2f x, f;
     x << 0, -0.25;
-    f << 0, -1;
+    f << 0.5, -1;
     // ウィンドウが開いているかぎり繰り返す
     int step = 0;
     while (window)
@@ -308,11 +310,13 @@ int main(void)
             line1.addForce(f / idling);
             line2.addForce(f / idling);
             line3.addForce(f / idling);
-            line4.addForce(f / idling);
-            line5.addForce(f / idling);
+            // line4.addForce(f / idling);
+            // line5.addForce(f / idling);
             // line6.addForce(f / idling);
             world.step();
         }
+        vector<float> c = world.center();
+        window.setCameraPos(c[0], c[1]);
         world.render();
 
         // shape->draw();

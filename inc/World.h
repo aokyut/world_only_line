@@ -41,16 +41,30 @@ namespace physics
         float loops_gauss_seidel = 100;
         float omega_sor = 1.2;
         float floor_y = -2.0;
-        Bar floor;
+        Bar *bar;
 
     public:
-        World() : body_count(0), floor(Bar())
+        World() : body_count(0), bar(new Bar())
         {
             wsize = 0;
             delta = 0.01;
             id_max = 0;
             penalty_alpha = 0.1;
             penalty_beta = 0.02;
+        }
+
+        void reset()
+        {
+            bodies = vector<LineBody *>();
+            constraints = vector<Constraint *>();
+            body_count = 0;
+            wsize = 0;
+            id_max = 0;
+        }
+
+        void resetShader()
+        {
+            bar = new Bar();
         }
 
         void addBody(LineBody *body)
@@ -65,6 +79,31 @@ namespace physics
         {
             constraints.push_back(constraint);
             wsize += constraint->wsize();
+        }
+
+        /// @brief add force all body-center in world
+        /// @param f: Vector2f
+        void addForceToAll(Vector2f f)
+        {
+            for (LineBody *body : bodies)
+            {
+                body->addForce(f);
+            }
+        }
+
+        /// @brief add acceleration to all body in world
+        /// @param a
+        void addAccelToAll(Vector2f a)
+        {
+            for (LineBody *body : bodies)
+            {
+                body->addForce(a * body->m);
+            }
+        }
+
+        bool hasBody()
+        {
+            return body_count > 0;
         }
 
         vector<float> center()
@@ -85,12 +124,20 @@ namespace physics
             return ans;
         }
 
+        void show()
+        {
+            cout << "world-body" << endl;
+
+            for (LineBody *body : bodies)
+            {
+                cout << body->_getId() << endl;
+            }
+        }
+
         void step()
         {
             // int cmax = constraints.size();
-
             vector<FloorCollisionJacobian> collision_jacobians;
-
             // 衝突を数える
             for (LineBody *body : bodies)
             {
@@ -115,7 +162,6 @@ namespace physics
             }
 
             int collision_dim = collision_jacobians.size();
-            // cout << "collision dim: " << collision_dim << endl;
 
             // 拘束を処理する
             // [w_size, body * 3]
@@ -340,11 +386,12 @@ namespace physics
         {
             for (int i = 0; i < body_count; i++)
             {
-                bodies[i]->draw();
+                // bodies[i]->draw();
+                bar->draw(bodies[i]->s, bodies[i]->t);
             }
-            Vector2f s(-10, floor_y);
-            Vector2f t(10, floor_y);
-            floor.draw(s, t);
+            Vector2f s(-10000, floor_y);
+            Vector2f t(10000, floor_y);
+            bar->draw(s, t);
         }
     };
 }

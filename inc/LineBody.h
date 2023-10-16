@@ -29,7 +29,7 @@ namespace physics
     {
 
     private:
-        Bar bar;
+        // Bar bar;
         // 固定する
         bool fix;
 
@@ -60,7 +60,7 @@ namespace physics
         /// @param ty 終点のy座標
         /// @param m 線分の重さ
         LineBody(float sx, float sy, float tx, float ty, float m)
-            : m(m), s(Vector2f(sx, sy)), t(Vector2f(tx, ty)), I(((tx - sx) * (tx - sx) + (ty - sy) * (ty - sy)) * m / 12.0f), bar(Bar()), w(0), aw(0), fix(false)
+            : m(m), s(Vector2f(sx, sy)), t(Vector2f(tx, ty)), I(((tx - sx) * (tx - sx) + (ty - sy) * (ty - sy)) * m / 12.0f), w(0), aw(0), fix(false)
         {
             // std::cout << "LineBody in" << sx << sy << tx << ty << m << delta << std::endl;
             // std::cout << "LineBody s and t " << s(0) << " " << s(1) << " " << t(0) << " " << t(1) << std::endl;
@@ -191,7 +191,7 @@ namespace physics
         void draw()
         {
             // std::cout << "LineBody.draw " << s(0) << " " << s(1) << " " << t(0) << " " << t(1) << std::endl;
-            bar.draw(s, t);
+            // bar.draw(s, t);
         }
 
         void setFix()

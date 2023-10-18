@@ -394,4 +394,54 @@ namespace physics
             bar->draw(s, t);
         }
     };
+
+    class LineAgent
+    {
+    private:
+        vector<LineBody *> bodies;
+        vector<HingeJoint *> joints;
+        vector<int> parents;
+
+    public:
+        LineAgent(float l)
+        {
+            LineBody *root = new LineBody(0, l, 0, 0, l);
+        }
+
+        /// @brief joint new line to agent
+        /// @param l: Length new line
+        /// @param r: [-1 ~ 1]connect position
+        /// @param parentIndex: line to connect
+        void AddBody(int parentIndex, float l, float r)
+        {
+            if (parentIndex >= bodies.size())
+            {
+                cerr << "parentIndex must be less than bodies size" << endl;
+                return;
+            }
+
+            LineBody *parentBody = bodies[parentIndex];
+            LineBody *newLine;
+            if (r < 0)
+            {
+                r = -r;
+                Vector2f s = parentBody->ri(r);
+                Vector2f st = (parentBody->t - parentBody->s).normalized();
+                Vector2f t = s + Vector2f(st(1), -st(0)) * l;
+                newLine = new LineBody(s(0), s(1), t(0), t(1), l);
+            }
+            else
+            {
+                Vector2f s = parentBody->ri(r);
+                Vector2f st = (parentBody->t - parentBody->s).normalized();
+                Vector2f t = s + Vector2f(-st(1), st(0)) * l;
+                newLine = new LineBody(s(0), s(1), t(0), t(1), l);
+            }
+
+            bodies.push_back(newLine);
+            HingeJoint *c = new HingeJoint(parentBody, newLine, r);
+            joints.push_back(c);
+            parents.push_back(parentIndex);
+        }
+    };
 }

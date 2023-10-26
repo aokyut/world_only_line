@@ -195,31 +195,11 @@ namespace physics
 
         void testEnvSet()
         {
-            physics::LineBody *line1 = new physics::LineBody(0, 0, 0, 1, 1);
-            physics::LineBody *line2 = new physics::LineBody(0, 1, 1, 1, 1);
-            physics::LineBody *line3 = new physics::LineBody(1, 1, 1, 0, 1);
-            physics::LineBody *line4 = new physics::LineBody(1, 0, 0, 0, 1);
-            physics::LineBody *line5 = new physics::LineBody(0, 0, 1, 1, 1);
-            physics::HingeJoint *c1 = new physics::HingeJoint(line1, line2, 1.0f);
-            physics::HingeJoint *c2 = new physics::HingeJoint(line2, line3, 1.0f);
-            physics::HingeJoint *c3 = new physics::HingeJoint(line3, line4, 1.0f);
-            physics::HingeJoint *c4 = new physics::HingeJoint(line4, line1, 1.0f);
-            physics::HingeJoint *c5 = new physics::HingeJoint(line4, line5, 1.0f);
-            physics::HingeJoint *c6 = new physics::HingeJoint(line5, line3, 1.0f);
-
-            world->addBody(line1);
-            world->addBody(line2);
-            world->addBody(line3);
-            world->addBody(line4);
-            world->addBody(line5);
-            world->addJoint(c1);
-            world->addJoint(c2);
-            world->addJoint(c3);
-            world->addJoint(c4);
-            world->addJoint(c5);
-            world->addJoint(c6);
-
-            world->show();
+            addAgent(1);
+            addLine(0, 1, 0.5);
+            // addLine(0, 1, 0.1);
+            addLine(0, 1, -0.5);
+            endAgentAssemble();
         }
 
         void show()
@@ -263,7 +243,7 @@ namespace physics
 
         void render()
         {
-            cout << "isOpenWindow" << isOpenWindow << endl;
+            // cout << "isOpenWindow" << isOpenWindow << endl;
             if (isOpenWindow == false)
             {
                 openWindow();

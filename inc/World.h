@@ -166,8 +166,6 @@ namespace physics
             // 拘束を処理する
             // [w_size, body * 3]
             // MatrixXf jacobian = MatrixXf::Zero(wsize + collision_dim, body_count * 3);
-            Sf jacobian(wsize + collision_dim, body_count * 3);
-            Sf m_inv_mat(body_count * 3, body_count * 3);
             vector<T> triplets_jacob;
             vector<T> triplets_m_inv;
             // MatrixXf jacobian = MatrixXf::Zero(wsize, body_count * 3);
@@ -179,12 +177,18 @@ namespace physics
             VectorXf u = VectorXf::Zero(body_count * 3);
 
             int jacob_w_index = 0;
+            vector<HingeJacobian> hinge_angle_jacobians;
             // set jacobian
             for (Constraint *c : constraints)
             {
                 c->fix(penalty_alpha, penalty_beta);
                 for (HingeJacobian cjacob : c->getJacobian())
                 {
+                    if (cjacob.isAngle)
+                    {
+                        hinge_angle_jacobians.push_back(cjacob);
+                        continue;
+                    }
                     int offset_i = cjacob.iid * 3;
                     int offset_j = cjacob.jid * 3;
                     triplets_jacob.push_back(T(jacob_w_index, offset_i, cjacob.vix));
@@ -199,6 +203,18 @@ namespace physics
                 }
             }
 
+            int dim_hinge_angle = hinge_angle_jacobians.size();
+            // set angle jacobian
+            for (HingeJacobian ajacob : hinge_angle_jacobians)
+            {
+                int offset_i = ajacob.iid * 3;
+                int offset_j = ajacob.jid * 3;
+                triplets_jacob.push_back(T(jacob_w_index, offset_i + 2, ajacob.wi));
+                triplets_jacob.push_back(T(jacob_w_index, offset_j + 2, ajacob.wj));
+
+                jacob_w_index++;
+            }
+
             for (FloorCollisionJacobian cjacob : collision_jacobians)
             {
                 int offset = cjacob.id * 3;
@@ -209,6 +225,9 @@ namespace physics
 
                 jacob_w_index++;
             }
+
+            Sf jacobian(wsize + collision_dim + dim_hinge_angle, body_count * 3);
+            Sf m_inv_mat(body_count * 3, body_count * 3);
 
             jacobian.setFromTriplets(triplets_jacob.begin(), triplets_jacob.end());
 
@@ -247,7 +266,7 @@ namespace physics
 
             // VectorXf lambda = A.colPivHouseholderQr().solve(-b);
             clock_t start = clock();
-            VectorXf lambda = solve_gauss_seidel(A, b, collision_dim, wsize);
+            VectorXf lambda = solve_gauss_seidel(A, b, collision_dim, wsize, dim_hinge_angle);
             clock_t end = clock();
 
             // const double time1 = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1000.0;
@@ -305,9 +324,10 @@ namespace physics
         /// @param dim_hinge
         /// @param loops
         /// @return
-        VectorXf solve_gauss_seidel(Sf A, VectorXf b, int dim_col, int dim_hinge)
+        VectorXf solve_gauss_seidel(Sf A, VectorXf b, int dim_col, int dim_hinge_pos, int dim_hinge_angle)
         {
-            int dim = dim_col + dim_hinge;
+            int dim = dim_col + dim_hinge_pos + dim_hinge_angle;
+            int dim_hinge = dim_hinge_pos + dim_hinge_angle;
             // A, bを整形
             Sf _A(dim, dim);
             vector<T> triplets;
@@ -348,7 +368,7 @@ namespace physics
                 d_lambda = 0;
                 // process hinge_joints
                 int j = 0;
-                for (; j < dim_hinge; j += 2)
+                for (; j < dim_hinge_pos; j += 2)
                 {
                     const float lambda_j = (A.row(j).dot(lambda) + b(j));
                     // d_lambda += abs(lambda_j - lambda(j));
@@ -357,6 +377,13 @@ namespace physics
                     // cout << "b(j+1):" << b(j + 1) << endl;
                     d_lambda += abs(lambda_j1 - lambda(j + 1)) + abs(lambda_j - lambda(j));
                     lambda(j + 1) = lambda_j1;
+                }
+
+                for (; j < dim_hinge; j++)
+                {
+                    const float lambda_j = max(0.0f, (A.row(j).dot(lambda) + b(j)));
+                    d_lambda += abs(lambda_j - lambda(j));
+                    lambda(j) = lambda_j;
                 }
 
                 // cout << "Here is the vector lambda:\n"
@@ -375,7 +402,12 @@ namespace physics
                     break;
                 }
             }
-            cout << "loops:" << i << "  d_lambda:" << d_lambda / dim << endl;
+            if (dim_hinge_angle >= 0)
+            {
+                cout << "dim_collision:" << dim_col << endl;
+                cout << "dim_hinge_angle:" << dim_hinge_angle << endl;
+                cout << "loops:" << i << "  d_lambda:" << d_lambda / dim << endl;
+            }
             return lambda;
         }
 
@@ -420,9 +452,9 @@ namespace physics
                 return;
             }
 
-
             LineBody *parentBody = bodies[parentIndex];
             LineBody *newLine;
+            HingeJoint *c;
             if (r < 0)
             {
                 r = -r;
@@ -430,6 +462,7 @@ namespace physics
                 Vector2f st = (parentBody->t - parentBody->s).normalized();
                 Vector2f t = s + Vector2f(st(1), -st(0)) * l;
                 newLine = new LineBody(s(0), s(1), t(0), t(1), l);
+                c = new HingeJoint(parentBody, newLine, r, 0.785, true);
             }
             else
             {
@@ -437,10 +470,10 @@ namespace physics
                 Vector2f st = (parentBody->t - parentBody->s).normalized();
                 Vector2f t = s + Vector2f(-st(1), st(0)) * l;
                 newLine = new LineBody(s(0), s(1), t(0), t(1), l);
+                c = new HingeJoint(parentBody, newLine, r, 0.785, false);
             }
 
             bodies.push_back(newLine);
-            HingeJoint *c = new HingeJoint(parentBody, newLine, r);
             joints.push_back(c);
             parents.push_back(parentIndex);
 

@@ -16,7 +16,7 @@ namespace physics
     };
 
     // Jacobian of constraint
-    struct CJacobian
+    struct HingeJacobian
     {
         int iid;
         int jid;
@@ -33,7 +33,7 @@ namespace physics
     protected:
     public:
         Constraint() {}
-        virtual vector<CJacobian> getJacobian() {}
+        virtual vector<HingeJacobian> getJacobian() {}
         virtual int wsize() {}
         virtual void fix(float, float) {} // applay penalty force
     };
@@ -47,15 +47,15 @@ namespace physics
 
         HingeJoint(LineBody *ibody, LineBody *jbody, float r) : ibody(ibody), jbody(jbody), r(r){};
 
-        vector<CJacobian> getJacobian() override
+        vector<HingeJacobian> getJacobian() override
         {
-            vector<CJacobian> ans(2);
+            vector<HingeJacobian> ans(2);
             Vector2f ri = ibody->ri(r) - ibody->c;
             Vector2f rj = jbody->s - jbody->c;
             int iid = ibody->_getId();
             int jid = jbody->_getId();
-            struct CJacobian j1 = {iid, jid, 1, 0, -ri(1), -1, 0, rj(1)};
-            struct CJacobian j2 = {iid, jid, 0, 1, ri(0), 0, -1, -rj(0)};
+            struct HingeJacobian j1 = {iid, jid, 1, 0, -ri(1), -1, 0, rj(1)};
+            struct HingeJacobian j2 = {iid, jid, 0, 1, ri(0), 0, -1, -rj(0)};
             ans[0] = j1;
             ans[1] = j2;
             return ans;
@@ -86,6 +86,6 @@ namespace physics
             : ibody(ibody), jbody(jbody){};
 
         void check();
-        vector<CJacobian> getJacobian() override{};
+        vector<HingeJacobian> getJacobian() override{};
     };
 }

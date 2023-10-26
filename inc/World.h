@@ -183,7 +183,7 @@ namespace physics
             for (Constraint *c : constraints)
             {
                 c->fix(penalty_alpha, penalty_beta);
-                for (CJacobian cjacob : c->getJacobian())
+                for (HingeJacobian cjacob : c->getJacobian())
                 {
                     int offset_i = cjacob.iid * 3;
                     int offset_j = cjacob.jid * 3;
@@ -365,11 +365,8 @@ namespace physics
                 for (; j < dim; j += 2)
                 {
                     const float lambda_j = max(0.0f, (A.row(j).dot(lambda) + b(j)));
-                    // const float lambda_j = max(-fric_mu * lambda(j + 1), min(fric_mu * lambda(j + 1), (A.row(j).dot(lambda) + b(j))));
-                    // d_lambda += abs(lambda_j - lambda(j));
                     lambda(j) = lambda_j;
                     const float lambda_j1 = max(-fric_mu * lambda(j), min(fric_mu * lambda(j), (A.row(j + 1).dot(lambda) + b(j + 1))));
-                    // const float lambda_j1 = max(0.0f, (A.row(j + 1).dot(lambda) + b(j + 1)));
                     d_lambda += abs(lambda_j1 - lambda(j + 1)) + abs(lambda_j - lambda(j));
                     lambda(j + 1) = lambda_j1;
                 }
@@ -422,6 +419,7 @@ namespace physics
                 cerr << "parentIndex must be less than bodies size" << endl;
                 return;
             }
+
 
             LineBody *parentBody = bodies[parentIndex];
             LineBody *newLine;

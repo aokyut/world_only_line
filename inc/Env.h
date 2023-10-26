@@ -165,11 +165,13 @@ namespace physics
         GLint locationLoc;
         float cameraPosX;
         float cameraPosY;
-        list<LineBody> bodies;
-        list<Constraint> joints;
+        float torqueScale = 20.0;
+        vector<LineBody> bodies;
+        vector<Constraint> joints;
+        vector<LineAgent> agents;
 
     public:
-        Vector2f g = Vector2f(3, -0.5);
+        Vector2f g = Vector2f(0, -0.5);
 
         Env() : world(new World())
         {
@@ -183,33 +185,12 @@ namespace physics
 
         void testEnvSet2()
         {
-            // snake
-            physics::LineBody *line1 = new physics::LineBody(0, 1, 0, 0.5, 1);
-            physics::LineBody *line2 = new physics::LineBody(0, 0.5, 0.5, 0.5, 1);
-            physics::LineBody *line3 = new physics::LineBody(0.5, 0.5, 1, 0.5, 1);
-            physics::LineBody *line4 = new physics::LineBody(1, 0.5, 1.5, 0.5, 1);
-            physics::LineBody *line5 = new physics::LineBody(1.5, 0.5, 2.0, 0.5, 1);
-            physics::LineBody *line6 = new physics::LineBody(2.0, 0.5, 5, 0.5, 1);
-            // line1.setFix();
-            physics::HingeJoint *c1 = new physics::HingeJoint(line1, line2, 1.0f);
-            physics::HingeJoint *c2 = new physics::HingeJoint(line2, line3, 1.0f);
-            physics::HingeJoint *c3 = new physics::HingeJoint(line3, line4, 1.0f);
-            physics::HingeJoint *c4 = new physics::HingeJoint(line4, line5, 1.0f);
-            physics::HingeJoint *c5 = new physics::HingeJoint(line5, line6, 1.0f);
-
-            line1->setFix();
-
-            world->addBody(line1);
-            world->addBody(line2);
-            world->addBody(line3);
-            world->addBody(line4);
-            world->addBody(line5);
-            world->addBody(line6);
-            world->addJoint(c1);
-            world->addJoint(c2);
-            world->addJoint(c3);
-            world->addJoint(c4);
-            world->addJoint(c5);
+            addAgent(1);
+            addLine(0, 1, 0.5);
+            addLine(0, 1, -0.5);
+            addLine(1, 0.5, -0.6);
+            addLine(2, 0.5, 0.6);
+            endAgentAssemble();
         }
 
         void testEnvSet()
@@ -246,15 +227,43 @@ namespace physics
             world->show();
         }
 
-        void step(vector<float> actions)
+        /// @brief
+        /// @param actions: Matrix(n, 1)
+        void step(MatrixXf actions)
         {
+            int row = 0;
+            for (LineAgent agent : agents)
+            {
+                for (int i = 0; i < agent.size(); i++)
+                {
+                    agent.setTorque(i, actions(row, 0), torqueScale);
+                    row++;
+                }
+            }
             world->addAccelToAll(g);
             world->step();
             tStep++;
         }
 
+        void addAgent(float l)
+        {
+            LineAgent agent = LineAgent(l, world);
+            agents.push_back(agent);
+        }
+
+        void addLine(int parentIndex, float l, float r)
+        {
+            agents[agents.size() - 1].addBody(parentIndex, l, r, world);
+        }
+
+        void endAgentAssemble()
+        {
+            agents[agents.size() - 1].tweak(world);
+        }
+
         void render()
         {
+            cout << "isOpenWindow" << isOpenWindow << endl;
             if (isOpenWindow == false)
             {
                 openWindow();

@@ -86,6 +86,11 @@ namespace physics
             return (1 - r) * s + r * t;
         }
 
+        void addTorque(float torque)
+        {
+            fw += torque;
+        }
+
         /// @param x 力が作用した点
         /// @param f 与えられる力
         void addForce(Vector2f x, Vector2f f)

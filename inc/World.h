@@ -40,10 +40,10 @@ namespace physics
         float th_gauss_seidel = 0.00001;
         float loops_gauss_seidel = 100;
         float omega_sor = 1.2;
-        float floor_y = -2.0;
         Bar *bar;
 
     public:
+        float floor_y = -2.0;
         World() : body_count(0), bar(new Bar())
         {
             wsize = 0;
@@ -403,16 +403,19 @@ namespace physics
         vector<int> parents;
 
     public:
-        LineAgent(float l)
+        LineAgent(float l, World *world)
         {
             LineBody *root = new LineBody(0, l, 0, 0, l);
+            bodies.push_back(root);
+            parents.push_back(0);
+            world->addBody(root);
         }
 
         /// @brief joint new line to agent
         /// @param l: Length new line
         /// @param r: [-1 ~ 1]connect position
         /// @param parentIndex: line to connect
-        void AddBody(int parentIndex, float l, float r)
+        void addBody(int parentIndex, float l, float r, World *world)
         {
             if (parentIndex >= bodies.size())
             {
@@ -442,6 +445,49 @@ namespace physics
             HingeJoint *c = new HingeJoint(parentBody, newLine, r);
             joints.push_back(c);
             parents.push_back(parentIndex);
+
+            world->addBody(newLine);
+            world->addJoint(c);
+        }
+
+        void setTorque(int index, float action, float torqueScale)
+        {
+            LineBody *tarBody = bodies[index];
+            LineBody *parentBody = bodies[parents[index]];
+            float torque = torqueScale * action * parentBody->I;
+            tarBody->addTorque(torque);
+            parentBody->addTorque(-torque);
+        }
+
+        int size()
+        {
+            return parents.size();
+        }
+
+        void tweak(World *world)
+        {
+            float minY = world->floor_y;
+            float minBodyY = minY + 1;
+            for (LineBody *body : bodies)
+            {
+                if (minBodyY > body->s(1))
+                {
+                    minBodyY = body->s(1);
+                }
+
+                if (minBodyY > body->t(1))
+                {
+                    minBodyY = body->t(1);
+                }
+            }
+
+            if (minBodyY < minY)
+                return;
+            Vector2f dpos = Vector2f(0, minY - minBodyY);
+            for (LineBody *body : bodies)
+            {
+                body->slide(dpos);
+            }
         }
     };
 }

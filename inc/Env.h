@@ -166,9 +166,9 @@ namespace physics
         float cameraPosX;
         float cameraPosY;
         float torqueScale = 20.0;
-        vector<LineBody> bodies;
-        vector<Constraint> joints;
         vector<LineAgent> agents;
+        int bodyNum = 0;
+        int jointNum = 0;
 
     public:
         Vector2f g = Vector2f(0, -0.5);
@@ -181,6 +181,9 @@ namespace physics
         {
             world->reset();
             tStep = 0;
+            bodyNum = 0;
+            jointNum = 0;
+            agents = vector<LineAgent>();
         }
 
         void testEnvSet2()
@@ -229,11 +232,61 @@ namespace physics
         {
             LineAgent agent = LineAgent(l, world);
             agents.push_back(agent);
+            bodyNum++;
         }
 
+        /// @brief add Line to Agent
+        /// @param parentIndex: tar Line to connect
+        /// @param l: length of additional Line
+        /// @param r: tar pos of Line [-1 ~ 1]
         void addLine(int parentIndex, float l, float r)
         {
             agents[agents.size() - 1].addBody(parentIndex, l, r, world);
+            bodyNum++;
+            jointNum++;
+        }
+
+        /// @brief get body observation
+        /// @return obs(bodyNum, {center_y, angle_vec(2), velocities(3)}(6))
+        MatrixXf getObservationBody()
+        {
+            MatrixXf obs(bodyNum, 6);
+            int tar_i = 0;
+            for (LineAgent agent : agents)
+            {
+                for (LineBody *body : agent.bodies)
+                {
+                    Vector2f angle_vec = (body->t - body->s).normalized();
+                    float center_y = body->c(1);
+                    Vector2f vel = body->v;
+                    float w = body->w;
+                    VectorXf obs_row(6);
+                    obs_row << center_y, angle_vec, vel, w;
+                    obs.row(tar_i) = obs_row;
+                    tar_i++;
+                }
+            }
+            return obs;
+        }
+
+        /// @brief get joint observation
+        /// @return obs(jointNum, {Joint.r, Joint.lim_angle_sin, angle(2)}(2))
+        MatrixXf getObservationJoint()
+        {
+            MatrixXf obs(jointNum, 4);
+            int tar_i = 0;
+            for (LineAgent agent : agents)
+            {
+                for (HingeJoint *joint : agent.joints)
+                {
+                    Vector2f angle_vec = joint->getAngleVector();
+                    VectorXf obs_row(4);
+                    obs_row << joint->r, joint->limit_angle_sin, angle_vec;
+                    obs.row(tar_i) = obs_row;
+                    tar_i++;
+                }
+            }
+            return obs;
         }
 
         void endAgentAssemble()

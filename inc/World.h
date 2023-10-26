@@ -427,11 +427,11 @@ namespace physics
     class LineAgent
     {
     private:
-        vector<LineBody *> bodies;
-        vector<HingeJoint *> joints;
         vector<int> parents;
 
     public:
+        vector<LineBody *> bodies;
+        vector<HingeJoint *> joints;
         LineAgent(float l, World *world)
         {
             LineBody *root = new LineBody(0, l, 0, 0, l);

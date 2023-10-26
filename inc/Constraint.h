@@ -152,6 +152,18 @@ namespace physics
             return ans;
         };
 
+        /// @brief angle between body_i and body_j
+        /// @return Vector2f(sin(theta_ij), cos(theta_ij))
+        Vector2f getAngleVector()
+        {
+            Vector2f sti_normalized = (ibody->t - ibody->s).normalized();
+            Vector2f stj_normalized = (jbody->t - jbody->s).normalized();
+            Vector2f angle_vector;
+            angle_vector << sti_normalized(0) * stj_normalized(1) - sti_normalized(1) * stj_normalized(0),
+                sti_normalized.dot(stj_normalized);
+            return angle_vector;
+        }
+
         int wsize() override
         {
             return 2;

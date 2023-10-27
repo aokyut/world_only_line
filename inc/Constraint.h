@@ -75,8 +75,6 @@ namespace physics
             float cos_ij = sti_normalized.dot(stj_normalized);
             if (flip && sin_ij > limit_angle_sin)
             {
-                cout << "sin_ij: " << sin_ij << endl
-                     << "cos_ij: " << cos_ij << endl;
                 vector<HingeJacobian> ans(3);
                 // alpha = -pi/2 - phi
                 // beta  = -pi/2 + phi
@@ -107,8 +105,6 @@ namespace physics
             }
             else if (!flip && sin_ij < limit_angle_sin)
             {
-                cout << "sin_ij: " << sin_ij << endl
-                     << "cos_ij: " << cos_ij << endl;
                 vector<HingeJacobian> ans(3);
                 // alpha = -pi/2 - phi
                 // beta  = -pi/2 + phi

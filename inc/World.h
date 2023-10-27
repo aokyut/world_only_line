@@ -395,12 +395,12 @@ namespace physics
                     break;
                 }
             }
-            if (dim_hinge_angle >= 0)
-            {
-                cout << "dim_collision:" << dim_col << endl;
-                cout << "dim_hinge_angle:" << dim_hinge_angle << endl;
-                cout << "loops:" << i << "  d_lambda:" << d_lambda / dim << endl;
-            }
+            // if (dim_hinge_angle >= 0)
+            // {
+            //     cout << "dim_collision:" << dim_col << endl;
+            //     cout << "dim_hinge_angle:" << dim_hinge_angle << endl;
+            //     cout << "loops:" << i << "  d_lambda:" << d_lambda / dim << endl;
+            // }
             return lambda;
         }
     };

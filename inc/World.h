@@ -2,7 +2,6 @@
 #include <iostream>
 #include "LineBody.h"
 #include "Constraint.h"
-#include "Bar.h"
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 // #include <Eigen/SparseCore>
@@ -40,11 +39,10 @@ namespace physics
         float th_gauss_seidel = 0.00001;
         float loops_gauss_seidel = 100;
         float omega_sor = 1.2;
-        Bar *bar;
 
     public:
         float floor_y = -2.0;
-        World() : body_count(0), bar(new Bar())
+        World() : body_count(0)
         {
             wsize = 0;
             delta = 0.01;
@@ -60,11 +58,6 @@ namespace physics
             body_count = 0;
             wsize = 0;
             id_max = 0;
-        }
-
-        void resetShader()
-        {
-            bar = new Bar();
         }
 
         void addBody(LineBody *body)
@@ -409,18 +402,6 @@ namespace physics
                 cout << "loops:" << i << "  d_lambda:" << d_lambda / dim << endl;
             }
             return lambda;
-        }
-
-        void render()
-        {
-            for (int i = 0; i < body_count; i++)
-            {
-                // bodies[i]->draw();
-                bar->draw(bodies[i]->s, bodies[i]->t);
-            }
-            Vector2f s(-10000, floor_y);
-            Vector2f t(10000, floor_y);
-            bar->draw(s, t);
         }
     };
 

@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <Eigen/Core>
-#include "Bar.h"
 using namespace Eigen;
 
 namespace physics
@@ -149,11 +148,6 @@ namespace physics
             c += dpos;
         }
 
-        // float potential()
-        // {
-        //     return c(1) * m * 0.05 + m * v.squaredNorm() / 2 + I * w * w / 2;
-        // }
-
         void update(float delta)
         {
             // std::cout << "fix:" << fix << std::endl;
@@ -165,38 +159,14 @@ namespace physics
                 fw = 0;
                 return;
             }
-            // v += delta * a;
-            // w += delta * aw;
-            // std::cout << "加速度: \n"
-            //           << a << "\n"
-            //           << aw << std::endl;
-            // 加速度をリセット
-            // a << 0, 0;
-            // aw = 0;
             f_ex << 0, 0;
             fw = 0;
-
-            // std::cout << "速度: \n"
-            //           << v << "\n"
-            //           << w << std::endl;
 
             c += delta * v;
 
             Matrix2f rotM = rotateMat(delta * w);
             s = rotM * (s + delta * v - c) + c;
             t = rotM * (t + delta * v - c) + c;
-
-            // std::cout << "位置: \n"
-            //           << c << "\n"
-            //           << s << "\n"
-            //           << t << "\n"
-            //           << w << std::endl;
-        }
-
-        void draw()
-        {
-            // std::cout << "LineBody.draw " << s(0) << " " << s(1) << " " << t(0) << " " << t(1) << std::endl;
-            // bar.draw(s, t);
         }
 
         void setFix()

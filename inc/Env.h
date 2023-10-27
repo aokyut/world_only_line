@@ -189,8 +189,8 @@ namespace physics
         void testEnvSet2()
         {
             addAgent(1);
-            addLine(0, 1, 0.5);
-            addLine(0, 1, -0.5);
+            addLine(0, 1, 0.7);
+            addLine(0, 1, -0.7);
             addLine(1, 0.5, -0.6);
             addLine(2, 0.5, 0.6);
             endAgentAssemble();
@@ -287,6 +287,39 @@ namespace physics
                 }
             }
             return obs;
+        }
+
+        MatrixXf getCenterXs()
+        {
+            MatrixXf xs(agents.size(), 1);
+            for (int i = 0; i < agents.size(); i++)
+            {
+                xs(i, 0) = agents[i].getCenterX();
+            }
+
+            return xs;
+        }
+
+        MatrixXf getCenterYs()
+        {
+            MatrixXf ys(agents.size(), 1);
+            for (int i = 0; i < agents.size(); i++)
+            {
+                ys(i, 0) = agents[i].getCenterY();
+            }
+
+            return ys;
+        }
+
+        MatrixXf getEnergyConsumptions()
+        {
+            MatrixXf es(agents.size(), 1);
+            for (int i = 0; i < agents.size(); i++)
+            {
+                es(i, 0) = agents[i].getEnergyConsumption();
+            }
+
+            return es;
         }
 
         void endAgentAssemble()

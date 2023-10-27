@@ -431,6 +431,7 @@ namespace physics
 
     public:
         vector<LineBody *> bodies;
+        float *sum_torque = new float;
         vector<HingeJoint *> joints;
         LineAgent(float l, World *world)
         {
@@ -488,6 +489,8 @@ namespace physics
             float torque = torqueScale * action * parentBody->I;
             tarBody->addTorque(torque);
             parentBody->addTorque(-torque);
+            *sum_torque = abs(torque) + *sum_torque;
+            // cout << "torque" << sum_torque << endl;
         }
 
         int size()
@@ -519,6 +522,33 @@ namespace physics
             {
                 body->slide(dpos);
             }
+        }
+
+        float getCenterX()
+        {
+            float center_x = 0;
+            for (LineBody *body : bodies)
+            {
+                center_x += body->c(0);
+            }
+            return center_x / bodies.size();
+        }
+
+        float getCenterY()
+        {
+            float center_y = 0;
+            for (LineBody *body : bodies)
+            {
+                center_y += body->c(1);
+            }
+            return center_y / bodies.size();
+        }
+
+        float getEnergyConsumption()
+        {
+            float ans_torque = *sum_torque;
+            *sum_torque = 0;
+            return ans_torque;
         }
     };
 }

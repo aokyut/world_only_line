@@ -171,7 +171,7 @@ namespace physics
         int jointNum = 0;
 
     public:
-        Vector2f g = Vector2f(0, -0.5);
+        Vector2f g = Vector2f(3, -0.5);
 
         Env() : world(new World())
         {
@@ -320,6 +320,41 @@ namespace physics
             }
 
             return es;
+        }
+
+        /// @brief get line points for renderer
+        /// @return mat(bodies + 2, 4)
+        MatrixXf getLines()
+        {
+            MatrixXf lines(bodyNum + 2, 4);
+            // add bodies
+            int tar_idx = 0;
+            float max_center_x = 0;
+            for (LineAgent agent : agents)
+            {
+                for (LineBody *body : agent.bodies)
+                {
+                    VectorXf row(4);
+                    row << body->s, body->t;
+                    lines.row(tar_idx) = row;
+                    tar_idx++;
+                }
+                const float center_x = agent.getCenterX();
+                if (max_center_x < center_x)
+                {
+                    max_center_x = center_x;
+                }
+            }
+
+            VectorXf floor(4);
+            floor << -1000, world->floor_y, 1000, world->floor_y;
+            VectorXf vertical(4);
+            max_center_x = std::floorf(2 * max_center_x) / 2;
+            vertical << max_center_x, world->floor_y, max_center_x, 1000;
+            lines.row(tar_idx) = floor;
+            lines.row(tar_idx + 1) = vertical;
+
+            return lines;
         }
 
         void endAgentAssemble()

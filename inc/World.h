@@ -64,7 +64,6 @@ namespace physics
         {
             body->_setId(id_max);
             id_max++;
-            cout << "id:" << body->_getId() << endl;
             bodies.push_back(body);
             body_count++;
         }

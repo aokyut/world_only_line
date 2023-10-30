@@ -23,5 +23,8 @@ PYBIND11_MODULE(world_only_line, m)
         .def("get_lines", &physics::Env::getLines)
         .def("get_center_xs", &physics::Env::getCenterXs)
         .def("get_center_ys", &physics::Env::getCenterYs)
-        .def("get_energy_consumptions", &physics::Env::getEnergyConsumptions);
+        .def("get_energy_consumptions", &physics::Env::getEnergyConsumptions)
+        .def("add_agent", &physics::Env::addAgent)
+        .def("add_line", &physics::Env::addLine)
+        .def("end_agent_assemble", &physics::Env::endAgentAssemble);
 }

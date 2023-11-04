@@ -14,7 +14,7 @@ PYBIND11_MODULE(world_only_line, m)
     m.doc() = "pybind11 test";
     m.def("test_add", &test_add, "A function test doc");
     py::class_<physics::Env>(m, "Env")
-        .def(py::init<>())
+        .def(py::init<float>(), py::arg("scale") = 20.0)
         .def("reset", &physics::Env::reset)
         .def("set_test_agent", &physics::Env::testEnvSet2)
         .def("step", &physics::Env::step)

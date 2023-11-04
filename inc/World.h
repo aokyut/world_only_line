@@ -466,7 +466,7 @@ namespace physics
         {
             LineBody *tarBody = bodies[index];
             LineBody *parentBody = bodies[parents[index]];
-            float torque = torqueScale * action * parentBody->I;
+            float torque = torqueScale * action * parentBody->length;
             tarBody->addTorque(torque);
             parentBody->addTorque(-torque);
             *sum_torque = abs(torque) + *sum_torque;

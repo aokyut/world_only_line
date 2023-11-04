@@ -26,7 +26,7 @@ namespace physics
     public:
         Vector2f g = Vector2f(0, -0.5);
 
-        Env() : world(new World())
+        Env(float scale) : world(new World()), torqueScale(scale)
         {
         }
 
@@ -100,10 +100,10 @@ namespace physics
         }
 
         /// @brief get body observation
-        /// @return obs(bodyNum, {center_y, angle_vec(2), velocities(3)}(6))
+        /// @return obs(bodyNum, {length, center_y, angle_vec(2), velocities(3)}(7))
         MatrixXf getObservationBody()
         {
-            MatrixXf obs(bodyNum, 6);
+            MatrixXf obs(bodyNum, 7);
             int tar_i = 0;
             for (LineAgent agent : agents)
             {
@@ -113,8 +113,8 @@ namespace physics
                     float center_y = body->c(1);
                     Vector2f vel = body->v;
                     float w = body->w;
-                    VectorXf obs_row(6);
-                    obs_row << center_y, angle_vec, vel, w;
+                    VectorXf obs_row(7);
+                    obs_row << body->length, center_y, angle_vec, vel, w;
                     obs.row(tar_i) = obs_row;
                     tar_i++;
                 }
@@ -123,7 +123,7 @@ namespace physics
         }
 
         /// @brief get joint observation
-        /// @return obs(jointNum, {Joint.r, Joint.lim_angle_sin, angle(2)}(2))
+        /// @return obs(jointNum, {Joint.r, Joint.lim_angle_sin, angle(2)}(4))
         MatrixXf getObservationJoint()
         {
             MatrixXf obs(jointNum, 4);
@@ -201,11 +201,14 @@ namespace physics
 
             VectorXf floor(4);
             floor << -1000, world->floor_y, 1000, world->floor_y;
-            VectorXf vertical(4);
-            max_center_x = std::floorf(2 * max_center_x) / 2;
-            vertical << max_center_x, world->floor_y, max_center_x, 1000;
+            VectorXf vertical1(4);
+            // VectorXf vertical2(4);
+            max_center_x = ::floorf(max_center_x);
+            vertical1 << max_center_x, world->floor_y, max_center_x, 1000;
+            // vertical2 << max_center_x + 1, world->floor_y, max_center_x, 1000;
             lines.row(tar_idx) = floor;
-            lines.row(tar_idx + 1) = vertical;
+            lines.row(tar_idx + 1) = vertical1;
+            // lines.row(tar_idx + 2) = vertical2;
 
             return lines;
         }

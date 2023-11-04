@@ -49,6 +49,7 @@ namespace physics
         const float I;
         // 角速度
         float w;
+        float length;
         // 重心の速度
         Vector2f v;
         // デルタ
@@ -67,6 +68,7 @@ namespace physics
             f_ex << 0, 0;
             fw = 0;
             v << 0, 0;
+            length = (t - s).norm();
         }
 
         void _setId(int newId)
